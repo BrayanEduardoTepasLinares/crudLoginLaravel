@@ -21,8 +21,17 @@ class RolRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
 			'name' => 'required|string',
         ];
+        if ($this->route('rol')) {
+            $rules['name'] .= '|' . Rule::unique('rols', 'name')->ignore($this->route('rol')->id);
+        } else {
+            // Si se está creando un nuevo usuario, el email debe ser único
+            $rules['name'] .= '|unique:rols,name';
+        }
+
+        
+        return $rules;
     }
 }

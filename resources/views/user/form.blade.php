@@ -18,15 +18,14 @@
         </div>
         <div class="form-group mb-2 mb20">
             <label for="role_id" class="form-label">{{ __('Role') }}</label>
-            <select name="rol_id" class="form-control @error('rol_id') is-invalid @enderror" id="rol_id">
-                <option value="">-- Selecciona un Rol --</option>
-                {{-- Asegúrate de que la variable $roles se está pasando desde tu UserController --}}
-                @foreach($roles as $role)
-                    <option value="{{ $role->id }}" {{ old('role_id', $user?->role_id) == $role->id ? 'selected' : '' }}>
-                        {{ $role->name }}
-                    </option>
-                @endforeach
-            </select>
+            <select name="rol_id" id="rol_id" class="form-control">
+    <option value="">-- Selecciona un Rol --</option>
+    @foreach ($roles as $rol)
+        <option value="{{ $rol->id }}" @if (old('rol_id', $user->rol_id) == $rol->id) selected @endif>
+            {{ $rol->name }}
+        </option>
+    @endforeach
+</select>
             {!! $errors->first('role_id', '<div class="invalid-feedback" role="alert"><strong>:message</strong></div>') !!}
         </div>
 
