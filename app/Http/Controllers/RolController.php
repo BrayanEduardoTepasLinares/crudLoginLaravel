@@ -8,9 +8,15 @@ use Illuminate\Http\Request;
 use App\Http\Requests\RolRequest;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class RolController extends Controller
 {
+    public function __construct()
+    {
+        // Aplica el middleware 'auth.admin' a todas las acciones del controlador.
+        $this->middleware('auth.admin');
+    }
     /**
      * Display a listing of the resource.
      */

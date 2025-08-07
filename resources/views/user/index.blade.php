@@ -51,6 +51,8 @@
 										<td >{{ $user->name }}</td>
 										<td >{{ $user->email }}</td>
 										<td >{{ $user->rol_id }}</td>
+                                        @auth
+                                            @if(Auth::user()->rol->nombre === 'admin')
 
                                             <td>
                                                 <form action="{{ route('users.destroy', $user->id) }}" method="POST">
@@ -61,6 +63,8 @@
                                                     <button type="submit" class="btn btn-danger btn-sm" onclick="event.preventDefault(); confirm('Are you sure to delete?') ? this.closest('form').submit() : false;"><i class="fa fa-fw fa-trash"></i> {{ __('Delete') }}</button>
                                                 </form>
                                             </td>
+                                            @endif
+                                        @endauth
                                         </tr>
                                     @endforeach
                                 </tbody>
