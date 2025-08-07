@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use App\Models\Rol;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -102,5 +103,69 @@ class UserController extends Controller
 
         return Redirect::route('users.index')
             ->with('success', 'User deleted successfully');
+    }
+    /**
+     * Muestra el formulario de login.
+     * Es el equivalente a tu método Login() [AllowAnonymous] sin [HttpPost].
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showLoginForm()
+    {
+        return view('user.login');
+    }
+
+    /**
+     * Procesa las credenciales del usuario y lo autentica.
+     * Es el equivalente a tu método Login() con [HttpPost].
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function login(Request $request)
+    {
+        // 1. Validar los datos del formulario (email y password)
+        // Puedes crear una clase Request más robusta si lo prefieres
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        // 2. Intentar autenticar al usuario
+        // Auth::attempt() intentará encontrar el usuario por 'email' y verificará
+        // el hash de la 'password' automáticamente.
+        if (Auth::attempt($credentials)) {
+            // Regenera la sesión para evitar ataques de fijación de sesión
+            $request->session()->regenerate();
+            
+            // Redirige al usuario a la página de inicio o a la página que intentaba visitar
+            return redirect()->intended('/');
+        }
+
+        // Si la autenticación falla, redirige de nuevo al formulario de login con un error
+        return back()->withErrors([
+            'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
+        ])->onlyInput('email');
+    }
+
+    /**
+     * Cierra la sesión del usuario.
+     * Es el equivalente a tu método CerrarSession().
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        
+        // Invalida la sesión actual
+        $request->session()->invalidate();
+        
+        // Regenera el token CSRF para la próxima solicitud
+        $request->session()->regenerateToken();
+        
+        // Redirige al usuario a la página de inicio (o a donde desees)
+        return redirect('/');
     }
 }
