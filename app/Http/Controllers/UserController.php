@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\Rol;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -27,9 +29,10 @@ class UserController extends Controller
      */
     public function create(): View
     {
+        $roles = \App\Models\Rol::all();
         $user = new User();
 
-        return view('user.create', compact('user'));
+        return view('user.create', compact('user', 'roles'));
     }
 
     /**
@@ -37,7 +40,13 @@ class UserController extends Controller
      */
     public function store(UserRequest $request): RedirectResponse
     {
-        User::create($request->validated());
+        $data = $request->validated();
+
+    // 1. Hashear la contraseña antes de crear el usuario
+    $data['password'] = Hash::make($data['password']);
+
+    // 3. Crear el usuario con los datos procesados (contraseña hasheada)
+    User::create($data);
 
         return Redirect::route('users.index')
             ->with('success', 'User created successfully.');
@@ -58,9 +67,10 @@ class UserController extends Controller
      */
     public function edit($id): View
     {
+        $roles = \App\Models\Rol::all();
         $user = User::find($id);
 
-        return view('user.edit', compact('user'));
+        return view('user.edit', compact('user', 'roles'));
     }
 
     /**
@@ -68,7 +78,19 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, User $user): RedirectResponse
     {
-        $user->update($request->validated());
+        $data = $request->validated();
+
+        // 2. Lógica para la contraseña:
+        // Solo hashear y actualizar la contraseña si se proporcionó una nueva
+        if (isset($data['password']) && !empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            // Si el campo de contraseña está vacío, quítalo de los datos
+            // para que no intente sobrescribir la contraseña existente.
+            unset($data['password']);
+        }
+
+        $user->update($data);
 
         return Redirect::route('users.index')
             ->with('success', 'User updated successfully');
